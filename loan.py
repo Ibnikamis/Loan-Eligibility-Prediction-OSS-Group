@@ -1,3 +1,4 @@
+from eda_improvements import display_eda_improvements
 import streamlit as st
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -56,6 +57,9 @@ if uploaded_file is not None:
     ax.set_title("Correlation Heatmap")
     st.pyplot(fig)
 
+
+    # ADDITIONAL EDA
+    display_eda_improvements(B)
 
     # ENCODING
     for col in ['Gender', 'Marital_Status', 'Education', 'Existing_Loan', 'Loan_Status']:
