@@ -1,4 +1,5 @@
 
+from eda_improvements import display_eda_improvements
 import streamlit as st
 from data_validation import validate_dataset
 import pandas as pd
@@ -77,6 +78,10 @@ if uploaded_file is not None:
     sns.heatmap(B.corr(numeric_only=True), annot=True, cmap="YlGnBu", ax=ax)
     ax.set_title("Correlation Heatmap")
     st.pyplot(fig)
+
+
+    # ADDITIONAL EDA
+    display_eda_improvements(B)
 
     # ENCODING
     for col in ['Gender', 'Marital_Status', 'Education', 'Existing_Loan', 'Loan_Status']:
