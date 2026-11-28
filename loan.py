@@ -70,31 +70,26 @@ if uploaded_file is not None:
     # EDA
     st.header("📊 Exploratory Data Analysis")
 
-    # Loan Status Count
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.countplot(x='Loan_Status', data=B, ax=ax)
     ax.set_title("Loan Status Distribution")
     st.pyplot(fig)
 
-    # CIBIL Score
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.histplot(B['Cibil_Score'], kde=True, ax=ax)
     ax.set_title("Distribution of CIBIL Score")
     st.pyplot(fig)
 
-    # Income vs Loan
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.boxplot(x='Loan_Status', y='Annual_Income', data=B, ax=ax)
     ax.set_title("Annual Income vs Loan Status")
     st.pyplot(fig)
 
-    # CIBIL vs Loan
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.boxplot(x='Loan_Status', y='Cibil_Score', data=B, ax=ax)
     ax.set_title("CIBIL Score vs Loan Status")
     st.pyplot(fig)
 
-    # Heatmap
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.heatmap(B.corr(numeric_only=True), annot=True, cmap="YlGnBu", ax=ax)
     ax.set_title("Correlation Heatmap")
