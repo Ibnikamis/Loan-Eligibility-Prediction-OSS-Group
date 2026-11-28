@@ -1,25 +1,45 @@
-import streamlit as st # type: ignore
-import pandas as pd # type: ignore
-from sklearn.model_selection import train_test_split # type: ignore
-import sklearn.ensemble # type: ignore
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder # type: ignore
-import seaborn as sns # type: ignore
-import matplotlib.pyplot as plt # type: ignore
-from imblearn.over_sampling import SMOTE # type: ignore
-
+import streamlit as st
+import pandas as pd
+from eda_improvements import display_eda_improvements
+from data_validation import validate_dataset
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report
+import seaborn as sns
+import matplotlib.pyplot as plt
+from imblearn.over_sampling import SMOTE
 
 st.set_page_config(page_title="Loan Prediction App", layout="wide")
 
 st.title("🏦 Loan Eligibility Prediction – Streamlit App")
 
-uploaded_file = st.file_uploader(
-    "Upload BANK_CUSTOMER_DATA.csv",
-    type=["csv"],
-)
+uploaded_file = st.file_uploader("Upload BANK_CUSTOMER_DATA.csv", type=["csv"])
 
 if uploaded_file is not None:
     B = pd.read_csv(uploaded_file)
     B.columns = B.columns.str.strip()
+
+    # DATASET VALIDATION
+    st.header("🛡️ Dataset Quality Validation")
+
+    validation = validate_dataset(B)
+
+    if validation["errors"]:
+        st.error("Dataset validation failed!")
+
+        for error in validation["errors"]:
+            st.error(error)
+
+        st.stop()
+
+    if validation["warnings"]:
+        st.warning("Dataset validation warnings:")
+
+        for warning in validation["warnings"]:
+            st.warning(warning)
+
+    st.success("✅ Dataset validation passed!")
 
     required_columns = [
         "Annual_Income",
@@ -43,43 +63,48 @@ if uploaded_file is not None:
         )
         st.stop()
 
+    # DATASET PREVIEW
     st.subheader("📌 Dataset Preview")
     st.dataframe(B.head())
 
+    # EDA
     st.header("📊 Exploratory Data Analysis")
 
+    # Loan Status Count
     fig, ax = plt.subplots(figsize=(6, 4))
-    sns.countplot(x="Loan_Status", data=B, ax=ax)
+    sns.countplot(x='Loan_Status', data=B, ax=ax)
     ax.set_title("Loan Status Distribution")
     st.pyplot(fig)
 
+    # CIBIL Score
     fig, ax = plt.subplots(figsize=(6, 4))
-    sns.histplot(B["Cibil_Score"], kde=True, ax=ax)
+    sns.histplot(B['Cibil_Score'], kde=True, ax=ax)
     ax.set_title("Distribution of CIBIL Score")
     st.pyplot(fig)
 
+    # Income vs Loan
     fig, ax = plt.subplots(figsize=(6, 4))
-    sns.boxplot(x="Loan_Status", y="Annual_Income", data=B, ax=ax)
+    sns.boxplot(x='Loan_Status', y='Annual_Income', data=B, ax=ax)
     ax.set_title("Annual Income vs Loan Status")
     st.pyplot(fig)
 
+    # CIBIL vs Loan
     fig, ax = plt.subplots(figsize=(6, 4))
-    sns.boxplot(x="Loan_Status", y="Cibil_Score", data=B, ax=ax)
+    sns.boxplot(x='Loan_Status', y='Cibil_Score', data=B, ax=ax)
     ax.set_title("CIBIL Score vs Loan Status")
     st.pyplot(fig)
 
+    # Heatmap
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.heatmap(B.corr(numeric_only=True), annot=True, cmap="YlGnBu", ax=ax)
     ax.set_title("Correlation Heatmap")
     st.pyplot(fig)
 
-    for col in [
-        "Gender",
-        "Marital_Status",
-        "Education",
-        "Existing_Loan",
-        "Loan_Status",
-    ]:
+    # ADDITIONAL EDA
+    display_eda_improvements(B)
+
+    # ENCODING
+    for col in ['Gender', 'Marital_Status', 'Education', 'Existing_Loan', 'Loan_Status']:
         B[col] = B[col].astype(str).str.strip().str.title()
 
     label_enc = LabelEncoder()
@@ -122,6 +147,7 @@ if uploaded_file is not None:
         )
         st.stop()
 
+    # FEATURES
     features = [
         "Annual_Income",
         "Gold_Assets",
@@ -139,6 +165,7 @@ if uploaded_file is not None:
         st.error("Loan_Status must contain at least two different classes.")
         st.stop()
 
+    # TRAIN-TEST SPLIT
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
@@ -150,7 +177,7 @@ if uploaded_file is not None:
     sm = SMOTE(random_state=42)
     X_train_res, y_train_res = sm.fit_resample(X_train, y_train)
 
-    rf_model = sklearn.ensemble.RandomForestClassifier(
+    rf_model = RandomForestClassifier(
         n_estimators=200,
         max_depth=6,
         min_samples_split=10,
@@ -158,8 +185,10 @@ if uploaded_file is not None:
         class_weight="balanced",
         random_state=42,
     )
+
     rf_model.fit(X_train_res, y_train_res)
 
+    # FEATURE IMPORTANCE
     st.header("🔍 Feature Importance")
 
     importance_df = pd.DataFrame(
@@ -186,12 +215,12 @@ if uploaded_file is not None:
 
     st.header("📈 Model Performance")
 
-    accuracy = sklearn.metrics.accuracy_score(y_test, y_test_pred)
-    precision = sklearn.metrics.precision_score(y_test, y_test_pred, zero_division=0)
-    recall = sklearn.metrics.recall_score(y_test, y_test_pred, zero_division=0)
-    f1 = sklearn.metrics.f1_score(y_test, y_test_pred, zero_division=0)
-    train_accuracy = sklearn.metrics.accuracy_score(y_train, y_train_pred)
-    test_accuracy = sklearn.metrics.accuracy_score(y_test, y_test_pred)
+    accuracy = accuracy_score(y_test, y_test_pred)
+    precision = precision_score(y_test, y_test_pred, zero_division=0)
+    recall = recall_score(y_test, y_test_pred, zero_division=0)
+    f1 = f1_score(y_test, y_test_pred, zero_division=0)
+    train_accuracy = accuracy_score(y_train, y_train_pred)
+    test_accuracy = accuracy_score(y_test, y_test_pred)
 
     st.write(f"**Accuracy:** {accuracy:.4f}")
     st.write(f"**Precision:** {precision:.4f}")
@@ -200,14 +229,16 @@ if uploaded_file is not None:
     st.write(f"**Training Accuracy:** {train_accuracy:.4f}")
     st.write(f"**Testing Accuracy:** {test_accuracy:.4f}")
 
-    cm = sklearn.metrics.confusion_matrix(y_test, y_test_pred)
+    # CONFUSION MATRIX
+    cm = confusion_matrix(y_test, y_test_pred)
     fig, ax = plt.subplots(figsize=(5, 4))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
     ax.set_title("Confusion Matrix")
     st.pyplot(fig)
 
+    # CLASSIFICATION REPORT
     st.subheader("Classification Report")
-    st.text(sklearn.metrics.classification_report(y_test, y_test_pred, zero_division=0))
+    st.text(classification_report(y_test, y_test_pred, zero_division=0))
 
     st.header("📋 Final Loan Predictions")
 
