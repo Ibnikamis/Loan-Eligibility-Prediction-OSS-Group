@@ -1,19 +1,11 @@
-import streamlit as st
-import pandas as pd
-from sklearn.model_selection import train_test_split
-import sklearn.ensemble
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-    confusion_matrix,
-    classification_report,
-)
-import seaborn as sns
-import matplotlib.pyplot as plt
-from imblearn.over_sampling import SMOTE
+import streamlit as st # type: ignore
+import pandas as pd # type: ignore
+from sklearn.model_selection import train_test_split # type: ignore
+import sklearn.ensemble # type: ignore
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder # type: ignore
+import seaborn as sns # type: ignore
+import matplotlib.pyplot as plt # type: ignore
+from imblearn.over_sampling import SMOTE # type: ignore
 
 
 st.set_page_config(page_title="Loan Prediction App", layout="wide")
@@ -194,12 +186,12 @@ if uploaded_file is not None:
 
     st.header("📈 Model Performance")
 
-    accuracy = accuracy_score(y_test, y_test_pred)
-    precision = precision_score(y_test, y_test_pred, zero_division=0)
-    recall = recall_score(y_test, y_test_pred, zero_division=0)
-    f1 = f1_score(y_test, y_test_pred, zero_division=0)
-    train_accuracy = accuracy_score(y_train, y_train_pred)
-    test_accuracy = accuracy_score(y_test, y_test_pred)
+    accuracy = sklearn.metrics.accuracy_score(y_test, y_test_pred)
+    precision = sklearn.metrics.precision_score(y_test, y_test_pred, zero_division=0)
+    recall = sklearn.metrics.recall_score(y_test, y_test_pred, zero_division=0)
+    f1 = sklearn.metrics.f1_score(y_test, y_test_pred, zero_division=0)
+    train_accuracy = sklearn.metrics.accuracy_score(y_train, y_train_pred)
+    test_accuracy = sklearn.metrics.accuracy_score(y_test, y_test_pred)
 
     st.write(f"**Accuracy:** {accuracy:.4f}")
     st.write(f"**Precision:** {precision:.4f}")
@@ -208,14 +200,14 @@ if uploaded_file is not None:
     st.write(f"**Training Accuracy:** {train_accuracy:.4f}")
     st.write(f"**Testing Accuracy:** {test_accuracy:.4f}")
 
-    cm = confusion_matrix(y_test, y_test_pred)
+    cm = sklearn.metrics.confusion_matrix(y_test, y_test_pred)
     fig, ax = plt.subplots(figsize=(5, 4))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
     ax.set_title("Confusion Matrix")
     st.pyplot(fig)
 
     st.subheader("Classification Report")
-    st.text(classification_report(y_test, y_test_pred, zero_division=0))
+    st.text(sklearn.metrics.classification_report(y_test, y_test_pred, zero_division=0))
 
     st.header("📋 Final Loan Predictions")
 
